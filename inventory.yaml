@@ -1,0 +1,6 @@
+managers:
+  hosts:
+    casa-manager:
+cluster:
+  hosts:
+    casa[1:3]:
