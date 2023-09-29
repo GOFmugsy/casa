@@ -31,17 +31,17 @@
           - docker-compose
         state: latest
 
-		- name: Add docker group
-			become: true
-			become_method: sudo
-			group:
-				name: "docker"
-				state: present
+    - name: Add docker group
+      become: true
+      become_method: sudo
+      group:
+        name: "docker"
+        state: present
 
-		- name: Add mugsy to docker group
-			become: true
-			become_method: sudo
-			user:
-				name: mugsy
-				groups: docker
-				append: yes
+    - name: Add mugsy to docker group
+      become: true
+      become_method: sudo
+      user:
+        name: mugsy
+        groups: docker
+        append: yes
