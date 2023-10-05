@@ -1,6 +1,6 @@
 managers:
   hosts:
     casa-manager:
-cluster:
+workers:
   hosts:
     casa[1:3]:
