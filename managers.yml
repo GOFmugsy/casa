@@ -1,0 +1,5 @@
+---
+- hosts: managers
+  roles:
+    - common
+    - managers
