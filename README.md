@@ -1,5 +1,10 @@
 # casa
 
+### Software Stack
+- nginx reverse proxy
+- pihole
+- headscale vpn
+
 ### Cluster
 - 4x [RPi 4b](https://www.raspberrypi.com/products/raspberry-pi-4-model-b/)
 - [docker swarm](https://docs.docker.com/engine/swarm/)

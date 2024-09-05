@@ -1,1 +1,3 @@
 tmp/*
+services/nginx
+services/etc-*
