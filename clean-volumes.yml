@@ -1,0 +1,23 @@
+---
+- name: Remove volumes
+  gather_facts: false
+  hosts: all
+  module_defaults:
+    group/community.docker.docker:
+      docker_host: tcp://localhost:2376
+      # Configure TLS
+      tls: true
+      validate_certs: true
+        # tls_hostname: docker.example.com
+        #ca_path: /path/to/cacert.pem
+      # Increase timeout
+      timeout: 120
+  tasks:
+    - name: Remove pihole reverse proxy volume
+      docker_volume:
+        name: pihole_nginx_vol
+        state: absent
+    - name: Remove a pihole volume
+      docker_volume:
+        name: pihole_pihole_vol
+        state: absent

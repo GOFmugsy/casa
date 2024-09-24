@@ -2,8 +2,10 @@
 - name: Verify and register worker join token
   debug:
     msg: "{{ lookup('file', 'tmp/worker_token') }}"
+
 - name: Join worker to swarm
   community.docker.docker_swarm:
     state: join
     join_token: "{{ lookup('file', 'tmp/worker_token') }}"
     remote_addrs: "{{ lookup('file', 'tmp/first_manager_name') }}"
+

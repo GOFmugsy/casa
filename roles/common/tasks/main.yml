@@ -25,7 +25,13 @@
       - aptitude
       - docker.io
       - docker-compose
+      - nfs-common
     state: latest
+
+- name: Install pip packages to all
+  ansible.builtin.pip:
+    name:
+      - jsondiff
 
 - name: Add docker group
   become: true
@@ -41,3 +47,29 @@
     name: mugsy
     groups: docker
     append: yes
+
+- name: copy docker daemon config to hosts
+  become: true
+  become_method: sudo
+  ansible.builtin.copy:
+    src: roles/common/configs/daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Ensure docker is running and enabled at boot
+  become: true
+  become_method: sudo
+  systemd:
+    name: "docker.service"
+    state: started
+    enabled: true
+
+- name: Ensure containerd is running and enabled at boot
+  become: true
+  become_method: sudo
+  systemd:
+    name: "containerd.service"
+    state: started
+    enabled: true
