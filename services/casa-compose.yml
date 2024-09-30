@@ -1,0 +1,83 @@
+version: '3.2'
+services:
+  traefik:
+     image: traefik:latest
+     command:
+       - "--api.insecure=true"
+       - "--providers.swarm=true"
+       - "--entrypoints.web.address=:80"
+       - "--entrypoints.dns-tcp.address=:53/tcp"
+       - "--entrypoints.dns-udp.address=:53/udp"
+       - "--entrypoints.registry.address=:5000"
+     ports:
+       - "80:80"
+       - "53:53/tcp"
+       - "53:53/udp"
+       - "5000:5000"
+       - "8080:8080"
+     deploy:
+       mode: replicated
+       replicas: 1
+       placement:
+         constraints:
+           - node.hostname == casa-manager
+       labels:
+         - "traefik.http.routers.traefik-dash.rule=Host(`traefik.casa`)"
+         - "traefik.http.routers.traefik-dash.entrypoints=web"
+         - "traefik.http.routers.traefik-dash.service=traefik-dash-service"
+         - "traefik.http.services.traefik-dash-service.loadbalancer.server.port=8080"
+     volumes:
+       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  pihole:
+    image: pihole/pihole:latest
+    environment:
+      TZ: 'America/New_York'
+      WEBPASSWORD: '1234'
+    volumes:
+      - 'pihole_vol:/etc/pihole'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.pihole_pihole.rule=Host(`pihole.casa`)"
+        - "traefik.http.routers.pihole_pihole.entrypoints=web"
+        - "traefik.http.routers.pihole_pihole.service=pihole_pihole"
+        - "traefik.tcp.routers.pihole_pihole.rule=HostSNI(`*`)"
+        - "traefik.tcp.routers.pihole_pihole.entrypoints=dns-tcp"
+        - "traefik.tcp.routers.pihole_pihole.service=pihole_pihole"
+        - "traefik.udp.routers.pihole_pihole.entrypoints=dns-udp"
+        - "traefik.udp.routers.pihole_pihole.service=pihole_pihole"
+        - "traefik.http.services.pihole_pihole.loadbalancer.server.port=80"
+        - "traefik.tcp.services.pihole_pihole.loadbalancer.server.port=53"
+        - "traefik.udp.services.pihole_pihole.loadbalancer.server.port=53"
+
+  registry:
+    image: registry:latest
+    volumes:
+      - 'registry_vol:/var/lib/registry'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.registry.rule=Host(`registry.casa`)"
+        - "traefik.http.routers.registry.entrypoints=web"
+        - "traefik.http.routers.registry.service=registry-service"
+        - "traefik.http.services.registry-service.loadbalancer.server.port=5000"
+
+volumes:
+  registry_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/casa-registry/"
+  pihole_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/pihole/"
+  nginx_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/nginxRP/"
