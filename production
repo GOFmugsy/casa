@@ -1,6 +1,12 @@
+leader:
+  hosts:
+    casa-manager1.local:
 managers:
   hosts:
-    casa-manager:
+    casa-manager[2:3].local:
 workers:
   hosts:
-    casa[1:3]:
+    casa[1:5].local:
+music-servers:
+  hosts:
+    deck.local:

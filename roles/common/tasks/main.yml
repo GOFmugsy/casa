@@ -28,6 +28,13 @@
       - nfs-common
     state: latest
 
+- name: Ignore PEP 668 because it's silly.
+  become: true
+  become_method: sudo
+  ansible.builtin.file:
+    path: /usr/lib/python3.11/EXTERNALLY-MANAGED
+    state: absent
+
 - name: Install pip packages to all
   ansible.builtin.pip:
     name:

@@ -1,0 +1,33 @@
+---
+- name: Init docker swarm
+  become: True
+  become_method: sudo
+  community.docker.docker_swarm:
+    state: present
+  register: swarm_info
+
+- name: Print manager token
+  debug:
+    msg: "{{ swarm_info.swarm_facts.JoinTokens.Manager }}"
+
+- name: Print worker token
+  debug:
+    msg: "{{ swarm_info.swarm_facts.JoinTokens.Worker }}"
+
+- name: Ensure local tmp dir
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/tmp/"
+    state: directory
+
+- name: Saving manager token to file
+  local_action: copy content="{{swarm_info.swarm_facts.JoinTokens.Manager}}" dest=tmp/manager_token
+
+- name: Saving worker token to file
+  local_action: copy content="{{swarm_info.swarm_facts.JoinTokens.Worker}}" dest=tmp/worker_token
+
+- name: Print leader hostname
+  debug:
+    msg: "{{ groups['leader'][0] }}"
+
+- name: Saving first manager IP to file
+  local_action: copy content="{{groups['leader'][0]}}" dest=tmp/first_manager_name

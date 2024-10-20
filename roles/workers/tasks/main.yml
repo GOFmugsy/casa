@@ -4,6 +4,8 @@
     msg: "{{ lookup('file', 'tmp/worker_token') }}"
 
 - name: Join worker to swarm
+  become: True
+  become_method: sudo
   community.docker.docker_swarm:
     state: join
     join_token: "{{ lookup('file', 'tmp/worker_token') }}"

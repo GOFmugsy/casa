@@ -1,18 +1,11 @@
 ---
-- name: Init docker swarm
+- name: Verify and register manager join token
+  debug:
+    msg: "{{ lookup('file', 'tmp/manager_token') }}"
+
+- name: Join managerto swarm
   community.docker.docker_swarm:
-    state: present
-  register: swarm_info
+    state: join
+    join_token: "{{ lookup('file', 'tmp/manager_token') }}"
+    remote_addrs: "{{ lookup('file', 'tmp/first_manager_name') }}"
 
-- name: Print swarm info
-  debug:
-    msg: "{{ swarm_info.swarm_facts.JoinTokens.Worker }}"
-
-- name: Saving worker token to file
-  local_action: copy content="{{swarm_info.swarm_facts.JoinTokens.Worker}}" dest=tmp/worker_token
-
-- name: Print manager hostname
-  debug:
-    msg: "{{ groups['managers'][0] }}"
-- name: Saving first manager IP to file
-  local_action: copy content="{{groups['managers'][0]}}" dest=tmp/first_manager_name

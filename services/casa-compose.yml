@@ -8,18 +8,19 @@ services:
        - "--entrypoints.web.address=:80"
        - "--entrypoints.dns-tcp.address=:53/tcp"
        - "--entrypoints.dns-udp.address=:53/udp"
+       - "--entrypoints.dhcp-udp.address=:67/udp"
        - "--entrypoints.registry.address=:5000"
      ports:
        - "80:80"
        - "0.0.0.0:53:53/tcp"
        - "0.0.0.0:53:53/udp"
-       - "5000:5000"
+       - "0.0.0.0:67:67/udp"
      deploy:
        mode: replicated
        replicas: 1
        placement:
          constraints:
-           - node.hostname == casa-manager
+           - node.role == manager
        labels:
          - "traefik.http.routers.traefik-dash.rule=Host(`traefik.casa`)"
          - "traefik.http.routers.traefik-dash.entrypoints=web"
@@ -55,12 +56,17 @@ services:
         - "traefik.tcp.routers.pihole_pihole.service=pihole_pihole"
         - "traefik.udp.routers.pihole_pihole.entrypoints=dns-udp"
         - "traefik.udp.routers.pihole_pihole.service=pihole_pihole"
+        - "traefik.udp.routers.pihole_dhcp.entrypoints=dhcp-udp"
+        - "traefik.udp.routers.pihole_dhcp.service=pihole_dhcp"
         - "traefik.http.services.pihole_pihole.loadbalancer.server.port=80"
         - "traefik.tcp.services.pihole_pihole.loadbalancer.server.port=53"
         - "traefik.udp.services.pihole_pihole.loadbalancer.server.port=53"
+        - "traefik.udp.services.pihole_dhcp.loadbalancer.server.port=67"
 
   registry:
     image: registry:latest
+    environment:
+      - 'REGISTRY_HTTP_ADDR=0.0.0.0:5000'
     volumes:
       - 'registry_vol:/var/lib/registry'
     deploy:
@@ -68,7 +74,7 @@ services:
       replicas: 1
       labels:
         - "traefik.http.routers.registry.rule=Host(`registry.casa`)"
-        - "traefik.http.routers.registry.entrypoints=web"
+        - "traefik.http.routers.registry.entrypoints=web,registry"
         - "traefik.http.routers.registry.service=registry-service"
         - "traefik.http.services.registry-service.loadbalancer.server.port=5000"
   
@@ -86,7 +92,32 @@ services:
         - "traefik.http.routers.ha.service=ha-service"
         - "traefik.http.services.ha-service.loadbalancer.server.port=8123"
 
+  viseron:
+    image: roflcoopter/viseron:latest
+    volumes:
+      - 'cameras_vol:/recordings'
+      - 'viseron_vol:/config'
+      - '/etc/localtime:/etc/localtime:ro'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.cameras.rule=Host(`cameras.casa`)"
+        - "traefik.http.routers.cameras.entrypoints=web"
+        - "traefik.http.routers.cameras.service=cameras-service"
+        - "traefik.http.services.cameras-service.loadbalancer.server.port=8888"
+
 volumes:
+  viseron_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/viseron/"
+  cameras_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/cameras/"
   registry_vol:
     driver_opts:
       type: "nfs"
