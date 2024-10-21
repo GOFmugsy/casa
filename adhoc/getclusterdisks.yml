@@ -1,0 +1,8 @@
+- name: Lets look at some disks
+  hosts: cluster
+  become: false
+  gather_facts: true
+  tasks:
+  - name: Output disk information
+    debug:
+      var: hostvars[inventory_hostname].ansible_devices

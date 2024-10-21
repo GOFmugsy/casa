@@ -1,0 +1,29 @@
+---
+- name: Make sure flash disk sda is ext4
+  become: true
+  become_method: sudo
+  community.general.filesystem:
+    fstype: ext4
+    dev: "/dev/sda"
+- name: Create flash disk mount /mnt/flash
+  become: true
+  become_method: sudo
+  file:
+    path: "/mnt/flash"
+    state: directory
+    mode: "774"
+- name: Mount disk to /mnt/flash
+  become: true
+  become_method: sudo
+  ansible.posix.mount:
+    path: "/mnt/flash"
+    src: "/dev/sda"
+    state: mounted
+    fstype: ext4
+- name: Create directory for recordings on flash
+  become: true
+  become_method: sudo
+  file:
+    path: "/mnt/flash/recordings"
+    state: directory
+    mode: "774"

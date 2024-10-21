@@ -2,4 +2,5 @@
 - import_playbook: leader.yml
 - import_playbook: managers.yml
 - import_playbook: workers.yml
+- import_playbook: cluster.yml
 - import_playbook: music-servers.yml

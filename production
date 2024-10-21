@@ -10,3 +10,8 @@ workers:
 music-servers:
   hosts:
     deck.local:
+cluster:
+  children:
+    leader:
+    managers:
+    workers:
