@@ -103,12 +103,30 @@ services:
         - "traefik.http.routers.ha.entrypoints=web"
         - "traefik.http.routers.ha.service=ha-service"
         - "traefik.http.services.ha-service.loadbalancer.server.port=8123"
+  
+  esphome:
+    image: ghcr.io/esphome/esphome:latest
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      #- /path/to/esphome/config:/config
+    environment:
+      - USERNAME=test
+      - PASSWORD=1234
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.esphome.rule=Host(`esphome.casa`)"
+        - "traefik.http.routers.esphome.entrypoints=web"
+        - "traefik.http.routers.esphome.service=esphome-service"
+        - "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
 
   viseron:
-    image: roflcoopter/viseron:latest
+    image: roflcoopter/viseron:dev
     volumes:
       - 'cameras_vol:/recordings'
       - 'viseron_vol:/config'
+      - '/mnt/flash/recordings:/flash'
       - '/etc/localtime:/etc/localtime:ro'
     deploy:
       mode: replicated
