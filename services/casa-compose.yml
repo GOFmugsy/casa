@@ -121,22 +121,6 @@ services:
         - "traefik.http.routers.esphome.service=esphome-service"
         - "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
 
-  viseron:
-    image: roflcoopter/viseron:dev
-    volumes:
-      - 'cameras_vol:/recordings'
-      - 'viseron_vol:/config'
-      - '/mnt/flash/recordings:/flash'
-      - '/etc/localtime:/etc/localtime:ro'
-    deploy:
-      mode: replicated
-      replicas: 1
-      labels:
-        - "traefik.http.routers.cameras.rule=Host(`cameras.casa`)"
-        - "traefik.http.routers.cameras.entrypoints=web"
-        - "traefik.http.routers.cameras.service=cameras-service"
-        - "traefik.http.services.cameras-service.loadbalancer.server.port=8888"
-
 volumes:
   viseron_vol:
     driver_opts:
