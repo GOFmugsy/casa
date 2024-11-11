@@ -108,9 +108,9 @@ services:
     image: ghcr.io/esphome/esphome:latest
     volumes:
       - '/etc/localtime:/etc/localtime:ro'
-      #- /path/to/esphome/config:/config
+      - 'esphome_vol:/config'
     environment:
-      - USERNAME=test
+      - USERNAME=casa
       - PASSWORD=1234
     deploy:
       mode: replicated
@@ -122,6 +122,11 @@ services:
         - "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
 
 volumes:
+  esphome_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/esphome/"
   viseron_vol:
     driver_opts:
       type: "nfs"
