@@ -1,0 +1,99 @@
+---
+- name: Copy coral-config.txt to coral-containing hosts
+  become: true
+  become_method: sudo
+  register: configtxt
+  copy:
+    src: ../configs/config.txt
+    dest: /boot/firmware/config.txt
+
+- name: If config.txt updated then reboot
+  become: true
+  become_method: sudo
+  reboot:
+  when: configtxt.changed
+
+- name: Add Google Coral source gpg key
+  become: true
+  become_method: sudo
+  ansible.builtin.apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Google Coral apt source
+  become: true
+  become_method: sudo
+  register: newsource
+  apt_repository:
+    repo: deb https://packages.cloud.google.com/apt coral-edgetpu-stable main
+    state: present
+    filename: coral-edgetpu.list
+
+- name: Update package list
+  become: true
+  become_method: sudo
+  apt:
+    update_cache: yes
+  when: newsource.changed
+
+- name: Install additional coral packages
+  become: true
+  become_method: sudo
+  apt:
+    pkg:
+      - cmake
+      - libedgetpu1-std
+      - devscripts
+      - debhelper
+      - dkms
+      - dh-dkms
+
+- name: Get public keys from hosts
+  shell: "cat ~/.ssh/id_rsa.pub"
+  register: sshpub
+
+- name: Print return information from the previous task
+  ansible.builtin.debug:
+    var: sshpub.stdout
+    verbosity: 2
+
+- name: Authorize key with GitHub
+  local_action:
+    module: github_key
+    name: '{{ ansible_hostname }}'
+    token: '{{ github_api }}'
+    pubkey: '{{ sshpub.stdout }}'
+
+- name: Create repos directory
+  ansible.builtin.file:
+    path: "~/repos"
+    state: directory
+
+- name: Clone gasket driver code
+  ansible.builtin.git:
+    repo: 'https://github.com/google/gasket-driver.git'
+    dest: "~/repos/gasket"
+
+- name: Build Debian package
+  command: chdir=~/repos/gasket debuild -us -uc -tc -b
+
+- name: Install Gasket Driver
+  command: chdir=~/repos sudo dpkg -i gasket-dkms_1.0-18_all.deb
+
+- name: Setup udev for device permissions
+  command: sudo sh -c "echo 'SUBSYSTEM==\"apex\", MODE=\"0660\", GROUP=\"apex\"' >> /etc/udev/rules.d/65-apex.rules"
+
+- name: Ensure group "apex" exists
+  become: true
+  become_method: sudo
+  group:
+    name: "apex"
+    state: present
+
+- name: Add mugsy to "apex" group
+  become: true
+  become_method: sudo
+  user:
+    name: mugsy
+    groups: apex
+    append: yes

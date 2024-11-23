@@ -80,3 +80,14 @@
     name: "containerd.service"
     state: started
     enabled: true
+
+- name: Check if public key exists
+  stat:
+    path: "~/.ssh/id_rsa.pub"
+  register: pubkey
+
+- name: Create public private keypair
+  community.crypto.openssh_keypair:
+    path: ~/.ssh/id_rsa
+  when: not pubkey.stat.exists
+

@@ -12,7 +12,6 @@
   community.general.filesystem:
     fstype: ext4
     dev: "/dev/sda1"
-    force: true
 - name: Create flash disk mount /mnt/flash
   become: true
   become_method: sudo

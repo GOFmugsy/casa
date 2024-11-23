@@ -1,5 +1,25 @@
 version: '3.2'
 services:
+  dmm:
+    image: alpinelinux/docker-cli
+    deploy:
+        mode: global
+    entrypoint: docker
+    command: |
+        run
+        --rm
+        -i
+        --name device-manager
+        --privileged
+        --cgroupns=host
+        --pid=host
+        --userns=host
+        -v /sys:/host/sys
+        -v /var/run/docker.sock:/var/run/docker.sock
+        ghcr.io/allfro/allfro/device-mapping-manager:nightly
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
   traefik:
      image: traefik:latest
      command:
@@ -121,17 +141,45 @@ services:
         - "traefik.http.routers.esphome.service=esphome-service"
         - "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
 
+  frigate:
+    image: ghcr.io/blakeblackshear/frigate:stable
+    volumes:
+      - 'frigate_vol:/config'
+      - 'cameras_vol:/media/frigate'
+      - 'frigate_tmpfs_vol:/tmp/cache'
+      - '/dev/apex_0:/dev/apex_0'
+      - '/dev/dri/renderD128:/dev/dri/renderD128'
+      - '/dev/video20:/dev/video20'
+    depends_on:
+      - "dmm"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.coral == true
+      labels:
+        - "traefik.http.routers.frigate.rule=Host(`frigate.casa`)"
+        - "traefik.http.routers.frigate.entrypoints=web"
+        - "traefik.http.routers.frigate.service=frigate-service"
+        - "traefik.http.services.frigate-service.loadbalancer.server.port=8971"
+
 volumes:
+  frigate_tmpfs_vol:
+    driver_opts:
+      type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
+      o: "size=1000000000"
+      device: tmpfs
   esphome_vol:
     driver_opts:
       type: "nfs"
       o: "addr=nas-casa.local,nolock,soft,rw"
       device: ":/export/esphome/"
-  viseron_vol:
+  frigate_vol:
     driver_opts:
       type: "nfs"
       o: "addr=nas-casa.local,nolock,soft,rw"
-      device: ":/export/viseron/"
+      device: ":/export/frigate-config/"
   cameras_vol:
     driver_opts:
       type: "nfs"

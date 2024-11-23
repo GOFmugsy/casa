@@ -15,3 +15,6 @@ cluster:
     leader:
     managers:
     workers:
+coral:
+  hosts:
+    casa[4:5].local
