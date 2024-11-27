@@ -1,0 +1,5 @@
+---
+- hosts: cameras
+  roles:
+    - common
+    - cameras

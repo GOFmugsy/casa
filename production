@@ -18,3 +18,9 @@ cluster:
 coral:
   hosts:
     casa[4:5].local
+cameras:
+  hosts:
+    camera-000.local:
+      camera: imx219
+    camera-001.local:
+      camera: imx477

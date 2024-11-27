@@ -5,3 +5,4 @@
 - import_playbook: cluster.yml
 - import_playbook: coral.yml
 - import_playbook: music-servers.yml
+- import_playbook: cameras.yml

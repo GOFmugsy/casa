@@ -1,0 +1,35 @@
+---
+- name: Make sure mediamtx dir exists on hosts
+  file:
+    path: ~/mediamtx
+    state: directory
+    mode: '0755'
+
+- name: Copy docker compose to hosts
+  copy:
+    src: "../compose/mediamtx-compose-{{ camera }}.yml"
+    dest: ~/mediamtx/docker-compose.yml
+
+- name: Copy mediamtx config to hosts
+  copy:
+    src: ../configs/mediamtx.yml
+    dest: ~/mediamtx/mediamtx.yml
+
+- name: Copy udev config for dma_heap
+  become: true
+  become_method: sudo
+  register: udevchanged
+  copy:
+    src: ../configs/raspberrypi.rules
+    dest: /etc/udev/rules.d/raspberrypi.rules
+
+- name: Reboot if udev changed
+  become: true
+  become_method: sudo
+  reboot:
+  when: udevchanged.changed
+
+- name: Start or Update mediamtx container
+  command: docker-compose up -d
+  args:
+    chdir: /home/mugsy/mediamtx/
