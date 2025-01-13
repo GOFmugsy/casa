@@ -21,6 +21,10 @@ coral:
 cameras:
   hosts:
     camera-000.local:
-      camera: imx219
+      camera: imx708
     camera-001.local:
       camera: imx477
+    camera-002.local:
+      camera: imx477
+    camera-003.local:
+      camera: ov5647

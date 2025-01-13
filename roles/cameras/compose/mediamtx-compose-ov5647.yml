@@ -13,7 +13,6 @@ services:
       - /dev/media2:/dev/media2
       - /dev/media3:/dev/media3
       - /dev/video0:/dev/video0
-      - /dev/video1:/dev/video1
       - /dev/video10:/dev/video10
       - /dev/video11:/dev/video11
       - /dev/video12:/dev/video12
