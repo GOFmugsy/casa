@@ -1,0 +1,8 @@
+---
+- name: Configure swarm macvlan network on leader
+  community.docker.docker_network:
+    name: mvlan_casa_swarm
+    driver: macvlan
+    scope: swarm
+    config_from: mvlan_casa
+

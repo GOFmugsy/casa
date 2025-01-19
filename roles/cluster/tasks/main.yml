@@ -34,3 +34,15 @@
     path: "/mnt/flash/recordings"
     state: directory
     mode: "777"
+- name: Configure per-node macvlan config network
+  community.docker.docker_network:
+    name: mvlan_casa
+    driver: "macvlan"
+    config_only: true
+    driver_options:
+      parent: "eth0"
+    ipam_config:
+      - subnet: 192.168.1.0/24
+        gateway: 192.168.1.254
+        iprange: 192.168.1.32/28
+

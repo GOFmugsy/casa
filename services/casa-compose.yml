@@ -117,6 +117,9 @@ services:
     volumes:
       - 'haconfig_vol:/config'
       - '/run/dbus:/run/dbus:ro'
+    networks:
+      - mvlan_casa_swarm
+      - casa_default
     deploy:
       mode: replicated
       replicas: 1
@@ -134,6 +137,9 @@ services:
     environment:
       - USERNAME=casa
       - PASSWORD=1234
+    networks:
+      - mvlan_casa_swarm
+      - casa_default
     deploy:
       mode: replicated
       replicas: 1
@@ -166,7 +172,44 @@ services:
         - "traefik.http.routers.frigate.service=frigate-service"
         - "traefik.http.services.frigate-service.loadbalancer.server.port=8971"
 
+  music:
+    image: ghcr.io/music-assistant/server:latest
+    volumes:
+      - 'music_vol:/media'
+      - 'music_assistant_vol:/data'
+    environment:
+      # Provide logging level as environment variable.
+      # default=info, possible=(critical, error, warning, info, debug)
+      - LOG_LEVEL=info
+    networks:
+      - mvlan_casa_swarm
+      - casa_default
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.musicassistant.rule=Host(`music.casa`)"
+        - "traefik.http.routers.musicassistant.entrypoints=web"
+        - "traefik.http.routers.musicassistant.service=musicassistant-service"
+        - "traefik.http.services.musicassistant-service.loadbalancer.server.port=8095"
+
+networks:
+  mvlan_casa_swarm:
+    external: true
+  casa_default:
+    external: true
+
 volumes:
+  music_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/music/"
+  music_assistant_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/music-assistant/"
   frigate_tmpfs_vol:
     driver_opts:
       type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
@@ -181,7 +224,7 @@ volumes:
     driver_opts:
       type: "nfs"
       o: "addr=nas-casa.local,nolock,soft,rw"
-      device: ":/export/frigate-config/"
+      device: ":/export/frigate-config/" 
   cameras_vol:
     driver_opts:
       type: "nfs"
