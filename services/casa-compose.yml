@@ -27,11 +27,13 @@ services:
      command:
        - "--api.dashboard=true"
        - "--providers.swarm=true"
+       - "--providers.docker.network=casa_default"
        - "--entrypoints.web.address=:80"
        - "--entrypoints.dns-tcp.address=:53/tcp"
        - "--entrypoints.dns-udp.address=:53/udp"
        - "--entrypoints.dhcp-udp.address=:67/udp"
        - "--entrypoints.registry.address=:5000"
+       - "--entrypoints.ma-stream.address=:8097"
      ports:
        - target: 80
          published: 80
@@ -48,6 +50,10 @@ services:
        - target: 67
          published: 67
          protocol: udp
+         mode: host
+       - target: 8097
+         published: 8097
+         protocol: tcp
          mode: host
      deploy:
        mode: global
@@ -182,8 +188,12 @@ services:
       # default=info, possible=(critical, error, warning, info, debug)
       - LOG_LEVEL=info
     networks:
-      - mvlan_casa_swarm
-      - casa_default
+      mvlan_casa_swarm:
+        aliases:
+          - music-physical
+      casa_default:
+        aliases:
+          - music-swarm
     deploy:
       mode: replicated
       replicas: 1
@@ -192,7 +202,14 @@ services:
         - "traefik.http.routers.musicassistant.entrypoints=web"
         - "traefik.http.routers.musicassistant.service=musicassistant-service"
         - "traefik.http.services.musicassistant-service.loadbalancer.server.port=8095"
-
+        - "traefik.http.routers.snapcast.rule=Host(`snap.casa`)"
+        - "traefik.http.routers.snapcast.entrypoints=web"
+        - "traefik.http.routers.snapcast.service=snapcast-service"
+        - "traefik.http.services.snapcast-service.loadbalancer.server.port=1780"
+        - "traefik.tcp.routers.ma-stream.rule=HostSNI(`*`)"
+        - "traefik.tcp.routers.ma-stream.entrypoints=ma-stream"
+        - "traefik.tcp.routers.ma-stream.service=ma-stream-service"
+        - "traefik.tcp.services.ma-stream-service.loadbalancer.server.port=8097"
 networks:
   mvlan_casa_swarm:
     external: true
