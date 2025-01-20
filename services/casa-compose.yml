@@ -210,6 +210,19 @@ services:
         - "traefik.tcp.routers.ma-stream.entrypoints=ma-stream"
         - "traefik.tcp.routers.ma-stream.service=ma-stream-service"
         - "traefik.tcp.services.ma-stream-service.loadbalancer.server.port=8097"
+  mqtt:
+    image: eclipse-mosquitto:latest
+    volumes:
+      - 'mqtt_config_vol:/mosquitto/config'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.mqtt.rule=Host(`mqtt.casa`)"
+        - "traefik.http.routers.mqtt.entrypoints=web"
+        - "traefik.http.routers.mqtt.service=mqtt-service"
+        - "traefik.http.services.mqtt-service.loadbalancer.server.port=1883"
+
 networks:
   mvlan_casa_swarm:
     external: true
@@ -217,6 +230,11 @@ networks:
     external: true
 
 volumes:
+  mqtt_config_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/mqtt-config/"
   music_vol:
     driver_opts:
       type: "nfs"
