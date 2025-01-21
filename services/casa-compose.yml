@@ -164,6 +164,7 @@ services:
       - '/dev/apex_0:/dev/apex_0'
       - '/dev/dri/renderD128:/dev/dri/renderD128'
       - '/dev/video20:/dev/video20'
+      - '/etc/localtime:/etc/localtime:ro'
     depends_on:
       - "dmm"
     deploy:
