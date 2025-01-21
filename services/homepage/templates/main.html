@@ -1,0 +1,10 @@
+<!doctype html>
+<title>CASA</title>
+<center>
+	<h1>CASA</h1>
+		<div style="align: center;">
+			{% for site in sites %}
+			<a href="http://{{ site }}">{{ site }}</a><br/>
+			{% endfor %}
+		</div>
+</center>

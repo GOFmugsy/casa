@@ -1,0 +1,293 @@
+version: '3.2'
+services:
+  dmm:
+    image: alpinelinux/docker-cli
+    deploy:
+      mode: global
+      labels:
+        - "traefik.enable=false"
+    entrypoint: docker
+    command: |
+        run
+        --rm
+        -i
+        --name device-manager
+        --privileged
+        --cgroupns=host
+        --pid=host
+        --userns=host
+        -v /sys:/host/sys
+        -v /var/run/docker.sock:/var/run/docker.sock
+        ghcr.io/allfro/allfro/device-mapping-manager:nightly
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  traefik:
+     image: traefik:v3.2
+     command:
+       - "--api.dashboard=true"
+       - "--providers.swarm=true"
+       - "--providers.docker.network=casa_default"
+       - "--entrypoints.web.address=:80"
+       - "--entrypoints.dns-tcp.address=:53/tcp"
+       - "--entrypoints.dns-udp.address=:53/udp"
+       - "--entrypoints.dhcp-udp.address=:67/udp"
+       - "--entrypoints.registry.address=:5000"
+       - "--entrypoints.ma-stream.address=:8097"
+     ports:
+       - target: 80
+         published: 80
+         protocol: tcp
+         mode: host
+       - target: 53
+         published: 53
+         protocol: tcp
+         mode: host
+       - target: 53
+         published: 53
+         protocol: udp
+         mode: host
+       - target: 67
+         published: 67
+         protocol: udp
+         mode: host
+       - target: 8097
+         published: 8097
+         protocol: tcp
+         mode: host
+     deploy:
+       mode: global
+         #replicas: 1
+       placement:
+         constraints:
+           - node.role == manager
+       labels:
+         - "traefik.http.routers.traefik-dash.rule=Host(`traefik.casa`)"
+         - "traefik.http.routers.traefik-dash.entrypoints=web"
+         - "traefik.http.routers.traefik-dash.service=api@internal"
+         - "traefik.http.routers.traefik-dash.middlewares=auth"
+         - "traefik.http.middlewares.auth.basicauth.users=casa:$$2y$$05$$5boQ2VWyy26s.caG8.VIkuZySBw.W3FhaDWDxfQpRnehmqr46RgQG" # From htpasswd $$ for $
+         - "traefik.http.services.traefik-dash-service.loadbalancer.server.port=8080"
+     volumes:
+       - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
+  pihole:
+    image: pihole/pihole:latest
+    environment:
+      TZ: 'America/New_York'
+      WEBPASSWORD: '1234'
+    volumes:
+      - 'pihole_vol:/etc/pihole'
+      - 'pihole_dns_vol:/etc/dnsmasq.d'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.pihole_pihole.rule=Host(`pihole.casa`)"
+        - "traefik.http.routers.pihole_pihole.entrypoints=web"
+        - "traefik.http.routers.pihole_pihole.middlewares=pihole_redirect"
+        - "traefik.http.routers.pihole_pihole.middlewares=pihole_addprefix"
+        - "traefik.http.routers.pihole_pihole.service=pihole_pihole"
+        - "traefik.http.middlewares.pihole_redirect.redirectregex.regex=/admin/$$"
+        - "traefik.http.middlewares.pihole_redirect.redirectregex.replacement=/"
+        - "traefik.http.middlewares.pihole_addprefix.addprefix.prefix=/admin"
+        - "traefik.tcp.routers.pihole_pihole.rule=HostSNI(`*`)"
+        - "traefik.tcp.routers.pihole_pihole.entrypoints=dns-tcp"
+        - "traefik.tcp.routers.pihole_pihole.service=pihole_pihole"
+        - "traefik.udp.routers.pihole_pihole.entrypoints=dns-udp"
+        - "traefik.udp.routers.pihole_pihole.service=pihole_pihole"
+        - "traefik.udp.routers.pihole_dhcp.entrypoints=dhcp-udp"
+        - "traefik.udp.routers.pihole_dhcp.service=pihole_dhcp"
+        - "traefik.http.services.pihole_pihole.loadbalancer.server.port=80"
+        - "traefik.tcp.services.pihole_pihole.loadbalancer.server.port=53"
+        - "traefik.udp.services.pihole_pihole.loadbalancer.server.port=53"
+        - "traefik.udp.services.pihole_dhcp.loadbalancer.server.port=67"
+
+  registry:
+    image: registry:latest
+    environment:
+      - 'REGISTRY_HTTP_ADDR=0.0.0.0:5000'
+    volumes:
+      - 'registry_vol:/var/lib/registry'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.registry.rule=Host(`registry.casa`)"
+        - "traefik.http.routers.registry.entrypoints=web,registry"
+        - "traefik.http.routers.registry.service=registry-service"
+        - "traefik.http.services.registry-service.loadbalancer.server.port=5000"
+  
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    volumes:
+      - 'haconfig_vol:/config'
+      - '/run/dbus:/run/dbus:ro'
+    networks:
+      - mvlan_casa_swarm
+      - casa_default
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.ha.rule=Host(`ha.casa`)"
+        - "traefik.http.routers.ha.entrypoints=web"
+        - "traefik.http.routers.ha.service=ha-service"
+        - "traefik.http.services.ha-service.loadbalancer.server.port=8123"
+  
+  esphome:
+    image: ghcr.io/esphome/esphome:latest
+    volumes:
+      - '/etc/localtime:/etc/localtime:ro'
+      - 'esphome_vol:/config'
+    environment:
+      - USERNAME=casa
+      - PASSWORD=1234
+    networks:
+      - mvlan_casa_swarm
+      - casa_default
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.esphome.rule=Host(`esphome.casa`)"
+        - "traefik.http.routers.esphome.entrypoints=web"
+        - "traefik.http.routers.esphome.service=esphome-service"
+        - "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
+
+  frigate:
+    image: ghcr.io/blakeblackshear/frigate:stable
+    volumes:
+      - 'frigate_vol:/config'
+      - 'cameras_vol:/media/frigate'
+      - 'frigate_tmpfs_vol:/tmp/cache'
+      - '/dev/apex_0:/dev/apex_0'
+      - '/dev/dri/renderD128:/dev/dri/renderD128'
+      - '/dev/video20:/dev/video20'
+    depends_on:
+      - "dmm"
+    deploy:
+      mode: replicated
+      replicas: 1
+      placement:
+        constraints:
+          - node.labels.coral == true
+      labels:
+        - "traefik.http.routers.frigate.rule=Host(`frigate.casa`)"
+        - "traefik.http.routers.frigate.entrypoints=web"
+        - "traefik.http.routers.frigate.service=frigate-service"
+        - "traefik.http.services.frigate-service.loadbalancer.server.port=8971"
+
+  music:
+    image: ghcr.io/music-assistant/server:latest
+    volumes:
+      - 'music_vol:/media'
+      - 'music_assistant_vol:/data'
+    environment:
+      # Provide logging level as environment variable.
+      # default=info, possible=(critical, error, warning, info, debug)
+      - LOG_LEVEL=info
+    networks:
+      mvlan_casa_swarm:
+        aliases:
+          - music-physical
+      casa_default:
+        aliases:
+          - music-swarm
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.musicassistant.rule=Host(`music.casa`)"
+        - "traefik.http.routers.musicassistant.entrypoints=web"
+        - "traefik.http.routers.musicassistant.service=musicassistant-service"
+        - "traefik.http.services.musicassistant-service.loadbalancer.server.port=8095"
+        - "traefik.http.routers.snapcast.rule=Host(`snap.casa`)"
+        - "traefik.http.routers.snapcast.entrypoints=web"
+        - "traefik.http.routers.snapcast.service=snapcast-service"
+        - "traefik.http.services.snapcast-service.loadbalancer.server.port=1780"
+        - "traefik.tcp.routers.ma-stream.rule=HostSNI(`*`)"
+        - "traefik.tcp.routers.ma-stream.entrypoints=ma-stream"
+        - "traefik.tcp.routers.ma-stream.service=ma-stream-service"
+        - "traefik.tcp.services.ma-stream-service.loadbalancer.server.port=8097"
+  mqtt:
+    image: eclipse-mosquitto:latest
+    volumes:
+      - 'mqtt_config_vol:/mosquitto/config'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.mqtt.rule=Host(`mqtt.casa`)"
+        - "traefik.http.routers.mqtt.entrypoints=web"
+        - "traefik.http.routers.mqtt.service=mqtt-service"
+        - "traefik.http.services.mqtt-service.loadbalancer.server.port=1883"
+
+networks:
+  mvlan_casa_swarm:
+    external: true
+  casa_default:
+    external: true
+
+volumes:
+  mqtt_config_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/mqtt-config/"
+  music_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/music/"
+  music_assistant_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/music-assistant/"
+  frigate_tmpfs_vol:
+    driver_opts:
+      type: tmpfs # Optional: 1GB of memory, reduces SSD/SD Card wear
+      o: "size=1000000000"
+      device: tmpfs
+  esphome_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/esphome/"
+  frigate_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/frigate-config/" 
+  cameras_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/cameras/"
+  registry_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/casa-registry/"
+  haconfig_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/haconfig/"
+  pihole_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/pihole/"
+  pihole_dns_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/pihole-dns/"
+  nginx_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/nginxRP/"
+
