@@ -223,7 +223,24 @@ services:
         - "traefik.http.routers.mqtt.entrypoints=web"
         - "traefik.http.routers.mqtt.service=mqtt-service"
         - "traefik.http.services.mqtt-service.loadbalancer.server.port=1883"
-
+  duplicati:
+    image: duplicati/duplicati:latest
+    command:
+      - 'duplicati-server'
+      - '--webservice-interface=any'
+      - '--webservice-port=8200'
+      - '--webservice-allowed-hostnames=*'
+    volumes:
+      - 'duplicati_config_vol:/data'
+      - 'mqtt_config_vol:/mqtt:ro'
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "traefik.http.routers.duplicati.rule=Host(`duplicati.casa`)"
+        - "traefik.http.routers.duplicati.entrypoints=web"
+        - "traefik.http.routers.duplicati.service=duplicati-service"
+        - "traefik.http.services.duplicati-service.loadbalancer.server.port=8200"
 networks:
   mvlan_casa_swarm:
     external: true
@@ -231,6 +248,11 @@ networks:
     external: true
 
 volumes:
+  duplicati_config_vol:
+    driver_opts:
+      type: "nfs"
+      o: "addr=nas-casa.local,nolock,soft,rw"
+      device: ":/export/duplicati-config/"
   mqtt_config_vol:
     driver_opts:
       type: "nfs"
