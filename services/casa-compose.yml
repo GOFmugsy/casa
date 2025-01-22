@@ -225,14 +225,17 @@ services:
         - "traefik.http.services.mqtt-service.loadbalancer.server.port=1883"
   duplicati:
     image: duplicati/duplicati:latest
-    command:
-      - 'duplicati-server'
-      - '--webservice-interface=any'
-      - '--webservice-port=8200'
-      - '--webservice-allowed-hostnames=*'
     volumes:
       - 'duplicati_config_vol:/data'
       - 'mqtt_config_vol:/mqtt:ro'
+      - 'music_vol:/music:ro'
+      - 'music_assistant_vol:/music-assistant-config:ro'
+      - 'esphome_vol:/esphome:ro'
+      - 'frigate_vol:/frigate:ro'
+      - 'registry_vol:/registry:ro'
+      - 'haconfig_vol:/haconfig:ro'
+      - 'pihole_vol:/pihole:ro'
+      - 'pihole_dns_vol:/pihole-dns:ro'
     deploy:
       mode: replicated
       replicas: 1
