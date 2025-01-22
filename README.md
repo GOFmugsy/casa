@@ -8,6 +8,8 @@
 - [Home Assistant](https://github.com/home-assistant/core)
 - [ESPHome](https://esphome.io/)
 - [Frigate](https://frigate.video/)
+- [MQTT](https://hub.docker.com/_/eclipse-mosquitto)
+- [Duplicati](https://hub.docker.com/r/duplicati/duplicati)
 
 ### Cluster
 - 2x [RPi 5](https://www.raspberrypi.com/products/raspberry-pi-5/)
