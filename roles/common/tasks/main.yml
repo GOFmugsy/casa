@@ -91,3 +91,8 @@
     path: ~/.ssh/id_rsa
   when: not pubkey.stat.exists
 
+- name: Add ssh trusts
+  authorized_key:
+    user: "mugsy"
+    state: present
+    key: "{{ vozdukh_pub }}"

@@ -27,4 +27,6 @@ cameras:
     camera-002.local:
       camera: imx477
     camera-003.local:
-      camera: ov5647
+      camera: imx708
+    camera-004.local:
+      camera: imx708

@@ -71,8 +71,10 @@
 
 - name: Clone gasket driver code
   ansible.builtin.git:
-    repo: 'https://github.com/google/gasket-driver.git'
+    #repo: 'https://github.com/google/gasket-driver.git'
+    repo: 'git@github.com:heitbaum/gasket-driver.git'
     dest: "~/repos/gasket"
+    version: 'llseek'
 
 - name: Build Debian package
   command: chdir=~/repos/gasket debuild -us -uc -tc -b
