@@ -136,7 +136,7 @@ services:
         - "traefik.http.services.ha-service.loadbalancer.server.port=8123"
   
   esphome:
-    image: ghcr.io/esphome/esphome:latest
+    image: ghcr.io/esphome/esphome:stable
     volumes:
       - '/etc/localtime:/etc/localtime:ro'
       - 'esphome_vol:/config'

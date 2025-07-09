@@ -4,6 +4,6 @@
 - import_playbook: workers.yml
 - import_playbook: cluster.yml
 - import_playbook: coral.yml
-# - import_playbook: music-servers.yml
+- import_playbook: music-servers.yml
 - import_playbook: cameras.yml
 - import_playbook: leader-after.yml
