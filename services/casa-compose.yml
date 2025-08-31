@@ -34,6 +34,7 @@ services:
        - "--entrypoints.dhcp-udp.address=:67/udp"
        - "--entrypoints.registry.address=:5000"
        - "--entrypoints.ma-stream.address=:8097"
+       - "--entrypoints.mqtt.address=:1883"
      ports:
        - target: 80
          published: 80
@@ -51,13 +52,20 @@ services:
          published: 67
          protocol: udp
          mode: host
+           #- target: 68
+           #published: 68
+           #protocol: udp
+           #mode: host
        - target: 8097
          published: 8097
          protocol: tcp
          mode: host
+       - target: 1883
+         published: 1883
+         protocol: tcp
+         mode: host
      deploy:
        mode: global
-         #replicas: 1
        placement:
          constraints:
            - node.role == manager
@@ -219,10 +227,10 @@ services:
       mode: replicated
       replicas: 1
       labels:
-        - "traefik.http.routers.mqtt.rule=Host(`mqtt.casa`)"
-        - "traefik.http.routers.mqtt.entrypoints=web"
-        - "traefik.http.routers.mqtt.service=mqtt-service"
-        - "traefik.http.services.mqtt-service.loadbalancer.server.port=1883"
+        - "traefik.tcp.routers.mqtt.rule=HostSNI(`*`)"
+        - "traefik.tcp.routers.mqtt.entrypoints=mqtt"
+        - "traefik.tcp.routers.mqtt.service=mqtt-service"
+        - "traefik.tcp.services.mqtt-service.loadbalancer.server.port=1883"
   duplicati:
     image: duplicati/duplicati:latest
     volumes:
@@ -280,7 +288,7 @@ volumes:
   jellyfin-media:
     driver_opts:
       type: "nfs"
-      o: "addr=nas-casa.local,nolock,soft,rw"
+      o: "addr=nas-jellyfin.local,nolock,soft,rw"
       device: ":/export/jellyfin-media/"
   duplicati_config_vol:
     driver_opts:
