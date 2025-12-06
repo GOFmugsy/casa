@@ -32,3 +32,13 @@
 
 ### VPN
 - Just using [tailscale](https://tailscale.com/) for now
+
+### macvlan networking
+- casa-manager1 - 192.168.1.16/30 - 17-18
+- casa-manager2 - 192.168.1.20/30 - 21-22
+- casa-manager4 - 192.168.1.24/30 - 25-26
+- casa1 - 192.168.1.28/30 - 29-30
+- casa2 - 192.168.1.32/30 - 33-34
+- casa3 - 192.168.1.36/30 - 37-38
+- casa4 - 192.168.1.40/30 - 41-42
+- casa5 - 192.168.1.44/30 - 45-46

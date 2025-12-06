@@ -23,7 +23,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 
   traefik:
-     image: traefik:v3.2
+     image: traefik:v3.6
      command:
        - "--api.dashboard=true"
        - "--providers.swarm=true"
@@ -132,8 +132,12 @@ services:
       - 'haconfig_vol:/config'
       - '/run/dbus:/run/dbus:ro'
     networks:
-      - mvlan_casa_swarm
-      - casa_default
+      casamvlanswarm:
+        aliases:
+          - ha-physical
+      casa_default:
+        aliases:
+          - ha-swarm
     deploy:
       mode: replicated
       replicas: 1
@@ -152,8 +156,12 @@ services:
       - USERNAME=casa
       - PASSWORD=1234
     networks:
-      - mvlan_casa_swarm
-      - casa_default
+      casamvlanswarm:
+        aliases:
+          - ha-physical
+      casa_default:
+        aliases:
+          - ha-swarm
     deploy:
       mode: replicated
       replicas: 1
@@ -197,7 +205,7 @@ services:
       # default=info, possible=(critical, error, warning, info, debug)
       - LOG_LEVEL=info
     networks:
-      mvlan_casa_swarm:
+      casamvlanswarm:
         aliases:
           - music-physical
       casa_default:
@@ -253,12 +261,12 @@ services:
         - "traefik.http.routers.duplicati.service=duplicati-service"
         - "traefik.http.services.duplicati-service.loadbalancer.server.port=8200"
   jellyfin:
-    image: jellyfin/jellyfin:latest
+    image: jellyfin/jellyfin:10.10
     volumes:
       - 'jellyfin-config:/config'
       - 'jellyfin-media:/media'
     networks:
-      mvlan_casa_swarm:
+      casamvlanswarm:
         aliases:
           - jellyfin-physical
       casa_default:
@@ -274,7 +282,7 @@ services:
         - "traefik.http.services.jellyfin-service.loadbalancer.server.port=8096"
 
 networks:
-  mvlan_casa_swarm:
+  casamvlanswarm:
     external: true
   casa_default:
     external: true
