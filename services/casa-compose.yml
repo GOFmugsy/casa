@@ -70,7 +70,7 @@ services:
          constraints:
            - node.role == manager
        labels:
-         - "traefik.http.routers.traefik-dash.rule=Host(`traefik.casa`)"
+         - "traefik.http.routers.traefik-dash.rule=Host(`traefik.mugsy.casa`)"
          - "traefik.http.routers.traefik-dash.entrypoints=web"
          - "traefik.http.routers.traefik-dash.service=api@internal"
          - "traefik.http.routers.traefik-dash.middlewares=auth"
@@ -91,7 +91,7 @@ services:
       mode: replicated
       replicas: 1
       labels:
-        - "traefik.http.routers.pihole_pihole.rule=Host(`pihole.casa`)"
+        - "traefik.http.routers.pihole_pihole.rule=Host(`pihole.mugsy.casa`)"
         - "traefik.http.routers.pihole_pihole.entrypoints=web"
           #- "traefik.http.routers.pihole_pihole.middlewares=pihole_redirect"
           #- "traefik.http.routers.pihole_pihole.middlewares=pihole_addprefix"
@@ -121,7 +121,7 @@ services:
       mode: replicated
       replicas: 1
       labels:
-        - "traefik.http.routers.registry.rule=Host(`registry.casa`)"
+        - "traefik.http.routers.registry.rule=Host(`registry.mugsy.casa`)"
         - "traefik.http.routers.registry.entrypoints=web,registry"
         - "traefik.http.routers.registry.service=registry-service"
         - "traefik.http.services.registry-service.loadbalancer.server.port=5000"
@@ -142,7 +142,7 @@ services:
       mode: replicated
       replicas: 1
       labels:
-        - "traefik.http.routers.ha.rule=Host(`ha.casa`)"
+        - "traefik.http.routers.ha.rule=Host(`ha.mugsy.casa`)"
         - "traefik.http.routers.ha.entrypoints=web"
         - "traefik.http.routers.ha.service=ha-service"
         - "traefik.http.services.ha-service.loadbalancer.server.port=8123"
@@ -166,7 +166,7 @@ services:
       mode: replicated
       replicas: 1
       labels:
-        - "traefik.http.routers.esphome.rule=Host(`esphome.casa`)"
+        - "traefik.http.routers.esphome.rule=Host(`esphome.mugsy.casa`)"
         - "traefik.http.routers.esphome.entrypoints=web"
         - "traefik.http.routers.esphome.service=esphome-service"
         - "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
@@ -190,7 +190,7 @@ services:
         constraints:
           - node.labels.coral == true
       labels:
-        - "traefik.http.routers.frigate.rule=Host(`frigate.casa`)"
+        - "traefik.http.routers.frigate.rule=Host(`frigate.mugsy.casa`)"
         - "traefik.http.routers.frigate.entrypoints=web"
         - "traefik.http.routers.frigate.service=frigate-service"
         - "traefik.http.services.frigate-service.loadbalancer.server.port=8971"
@@ -215,11 +215,11 @@ services:
       mode: replicated
       replicas: 1
       labels:
-        - "traefik.http.routers.musicassistant.rule=Host(`music.casa`)"
+        - "traefik.http.routers.musicassistant.rule=Host(`music.mugsy.casa`)"
         - "traefik.http.routers.musicassistant.entrypoints=web"
         - "traefik.http.routers.musicassistant.service=musicassistant-service"
         - "traefik.http.services.musicassistant-service.loadbalancer.server.port=8095"
-        - "traefik.http.routers.snapcast.rule=Host(`snap.casa`)"
+        - "traefik.http.routers.snapcast.rule=Host(`snap.mugsy.casa`)"
         - "traefik.http.routers.snapcast.entrypoints=web"
         - "traefik.http.routers.snapcast.service=snapcast-service"
         - "traefik.http.services.snapcast-service.loadbalancer.server.port=1780"
@@ -256,7 +256,7 @@ services:
       mode: replicated
       replicas: 1
       labels:
-        - "traefik.http.routers.duplicati.rule=Host(`duplicati.casa`)"
+        - "traefik.http.routers.duplicati.rule=Host(`duplicati.mugsy.casa`)"
         - "traefik.http.routers.duplicati.entrypoints=web"
         - "traefik.http.routers.duplicati.service=duplicati-service"
         - "traefik.http.services.duplicati-service.loadbalancer.server.port=8200"
@@ -276,7 +276,7 @@ services:
       mode: replicated
       replicas: 1
       labels:
-        - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.casa`)"
+        - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.mugsy.casa`)"
         - "traefik.http.routers.jellyfin.entrypoints=web"
         - "traefik.http.routers.jellyfin.service=jellyfin-service"
         - "traefik.http.services.jellyfin-service.loadbalancer.server.port=8096"
