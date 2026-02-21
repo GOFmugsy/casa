@@ -261,7 +261,7 @@ services:
         - "traefik.http.routers.duplicati.service=duplicati-service"
         - "traefik.http.services.duplicati-service.loadbalancer.server.port=8200"
   jellyfin:
-    image: jellyfin/jellyfin:10.10
+    image: jellyfin/jellyfin:10.11
     volumes:
       - 'jellyfin-config:/config'
       - 'jellyfin-media:/media'
