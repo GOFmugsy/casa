@@ -6,7 +6,7 @@ managers:
     casa-manager[2:3].local:
 workers:
   hosts:
-    casa[1:5].local:
+    casa[1:6].local:
 music-servers:
   hosts:
     deck.local:

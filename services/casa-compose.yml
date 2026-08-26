@@ -153,8 +153,8 @@ services:
       - '/etc/localtime:/etc/localtime:ro'
       - 'esphome_vol:/config'
     environment:
-      - USERNAME=casa
-      - PASSWORD=1234
+      - ESPHOME_USERNAME=casa
+      - ESPHOME_PASSWORD=1234
     networks:
       casamvlanswarm:
         aliases:
@@ -165,11 +165,15 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints:
+          - node.labels.fast==true
       labels:
         - "traefik.http.routers.esphome.rule=Host(`esphome.mugsy.casa`)"
         - "traefik.http.routers.esphome.entrypoints=web"
         - "traefik.http.routers.esphome.service=esphome-service"
-        - "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
+        - "traefik.http.services.esphome-service.loadbalancer.server.port=62351"
+          #- "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
 
   frigate:
     image: ghcr.io/blakeblackshear/frigate:stable
@@ -261,7 +265,7 @@ services:
         - "traefik.http.routers.duplicati.service=duplicati-service"
         - "traefik.http.services.duplicati-service.loadbalancer.server.port=8200"
   jellyfin:
-    image: jellyfin/jellyfin:10.11
+    image: jellyfin/jellyfin:unstable
     volumes:
       - 'jellyfin-config:/config'
       - 'jellyfin-media:/media'
@@ -275,6 +279,9 @@ services:
     deploy:
       mode: replicated
       replicas: 1
+      placement:
+        constraints:
+          - node.labels.fast==true
       labels:
         - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.mugsy.casa`)"
         - "traefik.http.routers.jellyfin.entrypoints=web"
