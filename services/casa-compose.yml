@@ -128,6 +128,7 @@ services:
   
   homeassistant:
     image: ghcr.io/home-assistant/home-assistant:2026.2
+    #image: ghcr.io/home-assistant/home-assistant:stable
     volumes:
       - 'haconfig_vol:/config'
       - '/run/dbus:/run/dbus:ro'
@@ -165,9 +166,9 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.labels.fast==true
+        #placement:
+        #constraints:
+        #  - node.labels.fast==true
       labels:
         - "traefik.http.routers.esphome.rule=Host(`esphome.mugsy.casa`)"
         - "traefik.http.routers.esphome.entrypoints=web"
@@ -265,10 +266,11 @@ services:
         - "traefik.http.routers.duplicati.service=duplicati-service"
         - "traefik.http.services.duplicati-service.loadbalancer.server.port=8200"
   jellyfin:
-    image: jellyfin/jellyfin:unstable
+    image: jellyfin/jellyfin:latest
     volumes:
       - 'jellyfin-config:/config'
       - 'jellyfin-media:/media'
+      - '/dev/dri/renderD128:/dev/dri/renderD128'
     networks:
       casamvlanswarm:
         aliases:
