@@ -1,4 +1,2 @@
 ---
-- hosts: coral
-  roles:
-    - coral
+- import_playbook: coral.yml

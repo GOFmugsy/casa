@@ -13,22 +13,18 @@
   reboot:
   when: configtxt.changed
 
-- name: Add Google Coral source gpg key
-  become: true
-  become_method: sudo
-  ansible.builtin.apt_key:
-    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
-    state: present
-
-- name: Add Google Coral apt source
-  become: true
-  become_method: sudo
-  register: newsource
-  apt_repository:
-    repo: deb https://packages.cloud.google.com/apt coral-edgetpu-stable main
-    state: present
-    filename: coral-edgetpu.list
-
+#- name: Add Google Coral gpg key and source
+  #become: true
+  #become_method: sudo
+  #ansible.builtin.deb822_repository:
+    #name: coraledgetpu
+    #types: deb
+    #uris: https://packages.cloud.google.com/apt
+    #signed_by: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    #suites: coral-edgetpu-stable
+    #components: main
+    #architectures: coral-edgetpu-stable
+# Currently recursing infinitely...
 - name: Update package list
   become: true
   become_method: sudo

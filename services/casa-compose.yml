@@ -127,8 +127,7 @@ services:
         - "traefik.http.services.registry-service.loadbalancer.server.port=5000"
   
   homeassistant:
-    image: ghcr.io/home-assistant/home-assistant:2026.2
-    #image: ghcr.io/home-assistant/home-assistant:stable
+    image: ghcr.io/home-assistant/home-assistant:stable
     volumes:
       - 'haconfig_vol:/config'
       - '/run/dbus:/run/dbus:ro'
@@ -174,7 +173,7 @@ services:
         - "traefik.http.routers.esphome.entrypoints=web"
         - "traefik.http.routers.esphome.service=esphome-service"
         - "traefik.http.services.esphome-service.loadbalancer.server.port=62351"
-          #- "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
+        - "traefik.http.services.esphome-service.loadbalancer.server.port=6052"
 
   frigate:
     image: ghcr.io/blakeblackshear/frigate:stable
@@ -281,31 +280,14 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-      placement:
-        constraints:
-          - node.labels.fast==true
+      #placement:
+        #constraints:
+          #- node.labels.fast==true
       labels:
         - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.mugsy.casa`)"
         - "traefik.http.routers.jellyfin.entrypoints=web"
         - "traefik.http.routers.jellyfin.service=jellyfin-service"
         - "traefik.http.services.jellyfin-service.loadbalancer.server.port=8096"
-  openwebui:
-    image: ghcr.io/open-webui/open-webui:dev
-    networks:
-      casamvlanswarm:
-        aliases:
-          - openwebui-physical
-      casa_default:
-        aliases:
-          - openwebui-swarm
-    deploy:
-      mode: replicated
-      replicas: 1
-      labels:
-        - "traefik.http.routers.openwebui.rule=Host(`openwebui.mugsy.casa`)"
-        - "traefik.http.routers.openwebui.entrypoints=web"
-        - "traefik.http.routers.openwebui.service=openwebui-service"
-        - "traefik.http.services.openwebui-service.loadbalancer.server.port=8080"
 
 networks:
   casamvlanswarm:
