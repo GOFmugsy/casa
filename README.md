@@ -42,3 +42,12 @@
 - casa3 - 192.168.1.36/30 - 37-38
 - casa4 - 192.168.1.40/30 - 41-42
 - casa5 - 192.168.1.44/30 - 45-46
+
+#### Notes from last rebuild
+- Add local macvlan network: `docker network create --config-only -d macvlan --subnet=10.0.0.0/24 --gateway=10.0.0.1 --ip-range=10.0.0.44/30 -o parent=eth0 casamvlanconf`
+- Add swarm macvlan network: `docker network create -d macvlan --scope swarm --config-from casamvlanconf --attachable casamvlanswarm`
+- Label faster node: `docker node update --label-add fast=true casa6`
+
+##### TODO
+- Tailscale is still manual with no ansible
+- Tailscale subnet routers will be management nodes but that is currently being worked on and all manual

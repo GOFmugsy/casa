@@ -159,15 +159,16 @@ services:
       casamvlanswarm:
         aliases:
           - ha-physical
+        ipv4_address: 10.0.0.49
       casa_default:
         aliases:
           - ha-swarm
     deploy:
       mode: replicated
       replicas: 1
-        #placement:
-        #constraints:
-        #  - node.labels.fast==true
+      placement:
+        constraints:
+          - node.labels.fast==true
       labels:
         - "traefik.http.routers.esphome.rule=Host(`esphome.mugsy.casa`)"
         - "traefik.http.routers.esphome.entrypoints=web"
@@ -271,18 +272,18 @@ services:
       - 'jellyfin-media:/media'
       - '/dev/dri/renderD128:/dev/dri/renderD128'
     networks:
-      casamvlanswarm:
-        aliases:
-          - jellyfin-physical
+      #casamvlanswarm:
+        #aliases:
+          #- jellyfin-physical
       casa_default:
         aliases:
           - jellyfin-swarm
     deploy:
       mode: replicated
       replicas: 1
-      #placement:
-        #constraints:
-          #- node.labels.fast==true
+      placement:
+        constraints:
+          - node.labels.fast==true
       labels:
         - "traefik.http.routers.jellyfin.rule=Host(`jellyfin.mugsy.casa`)"
         - "traefik.http.routers.jellyfin.entrypoints=web"
