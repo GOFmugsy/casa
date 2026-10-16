@@ -30,6 +30,6 @@
   when: udevchanged.changed
 
 - name: Start or Update mediamtx container
-  command: docker-compose up -d
+  command: docker compose up -d
   args:
     chdir: /home/mugsy/mediamtx/
